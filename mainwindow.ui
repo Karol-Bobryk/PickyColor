@@ -182,7 +182,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>255</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -198,6 +198,9 @@
                  </sizepolicy>
                 </property>
                 <property name="maximum">
+                 <number>255</number>
+                </property>
+                <property name="value">
                  <number>255</number>
                 </property>
                 <property name="orientation">
@@ -382,6 +385,28 @@
            </layout>
           </item>
           <item>
+           <widget class="QWidget" name="color_display" native="true">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>60</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>60</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="autoFillBackground">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Vertical</enum>
@@ -411,7 +436,7 @@
      <x>0</x>
      <y>0</y>
      <width>1232</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

@@ -24,10 +24,11 @@ public:
     ~MainWindow() override;
 
 private:
-    void bind_text_slider_inputs(BindableColorController::ColorInput color,
-                                 QLineEdit *edit,
-                                 QSlider *slider);
+    void bindTextSliderInputs(BindableColorController::ColorInput color,
+                              QLineEdit *edit,
+                              QSlider *slider);
     Ui::MainWindow *ui;
     BindableColorController *color_controller;
+    void updateColorDisplay(QColor color);
 };
 #endif // MAINWINDOW_H

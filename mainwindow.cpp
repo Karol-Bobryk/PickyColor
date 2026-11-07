@@ -12,32 +12,37 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    bind_text_slider_inputs(BindableColorController::ColorInput::Cyan,
-                            ui->edit_cyan,
-                            ui->slider_cyan);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Magenta,
-                            ui->edit_magenta,
-                            ui->slider_magenta);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Yellow,
-                            ui->edit_yellow,
-                            ui->slider_yellow);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Black,
-                            ui->edit_black,
-                            ui->slider_black);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Red,
-                            ui->edit_red, //
-                            ui->slider_red);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Green,
-                            ui->edit_green,
-                            ui->slider_green);
-    bind_text_slider_inputs(BindableColorController::ColorInput::Blue,
-                            ui->edit_blue,
-                            ui->slider_blue);
+    bindTextSliderInputs(BindableColorController::ColorInput::Cyan,
+                         ui->edit_cyan, //
+                         ui->slider_cyan);
+    bindTextSliderInputs(BindableColorController::ColorInput::Magenta,
+                         ui->edit_magenta,
+                         ui->slider_magenta);
+    bindTextSliderInputs(BindableColorController::ColorInput::Yellow,
+                         ui->edit_yellow,
+                         ui->slider_yellow);
+    bindTextSliderInputs(BindableColorController::ColorInput::Black,
+                         ui->edit_black,
+                         ui->slider_black);
+    bindTextSliderInputs(BindableColorController::ColorInput::Red,
+                         ui->edit_red, //
+                         ui->slider_red);
+    bindTextSliderInputs(BindableColorController::ColorInput::Green,
+                         ui->edit_green,
+                         ui->slider_green);
+    bindTextSliderInputs(BindableColorController::ColorInput::Blue,
+                         ui->edit_blue, //
+                         ui->slider_blue);
+
+    connect(color_controller,
+            &BindableColorController::colorUpdated,
+            this,
+            &MainWindow::updateColorDisplay);
 }
 
-void MainWindow::bind_text_slider_inputs(BindableColorController::ColorInput color,
-                                         QLineEdit *edit,
-                                         QSlider *slider)
+void MainWindow::bindTextSliderInputs(BindableColorController::ColorInput color,
+                                      QLineEdit *edit,
+                                      QSlider *slider)
 {
     color_controller->addHandler(
         std::move(color_controller->bindableColor(color).addNotifier([this, color, edit, slider]() {
@@ -53,6 +58,12 @@ void MainWindow::bind_text_slider_inputs(BindableColorController::ColorInput col
     connect(ui->edit_red, &QLineEdit::textEdited, [this, color](const QString &text) {
         color_controller->setColor(text.toInt(), color);
     });
+}
+void MainWindow::updateColorDisplay(QColor color)
+{
+    QPalette p = ui->color_display->palette();
+    p.setColor(ui->color_display->backgroundRole(), color);
+    ui->color_display->setPalette(p);
 }
 
 MainWindow::~MainWindow()
