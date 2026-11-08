@@ -4,13 +4,11 @@
 BindableColorController::BindableColorController()
 {
     connect(this, &BindableColorController::rgbUpdated, [this](QColor rgb) {
-        qInfo() << rgb;
         setCmyk(toCmyk(rgb), false);
         emit colorUpdated(rgb);
     });
 
     connect(this, &BindableColorController::cmykUpdated, [this](QColor cmyk) {
-        qInfo() << cmyk;
         setRgb(toRgb(cmyk), false);
         emit colorUpdated(toRgb(cmyk));
     });

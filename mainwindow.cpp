@@ -55,7 +55,8 @@ void MainWindow::bindTextSliderInputs(BindableColorController::ColorInput color,
         color_controller->setColor(v, color);
     });
 
-    connect(ui->edit_red, &QLineEdit::textEdited, [this, color](const QString &text) {
+    connect(edit, &QLineEdit::textEdited, [this, color](const QString &text) {
+        qInfo() << text.toInt();
         color_controller->setColor(text.toInt(), color);
     });
 }
