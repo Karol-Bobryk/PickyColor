@@ -229,7 +229,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QOpenGLWidget" name="openGLWidget">
+           <widget class="OpenGLView" name="openGLWidget">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -442,6 +442,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>OpenGLView</class>
+   <extends>QOpenGLWidget</extends>
+   <header location="global">openglview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

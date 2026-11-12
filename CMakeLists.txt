@@ -24,6 +24,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         bindablecolorcontroller.h bindablecolorcontroller.cpp
+        openglview.h openglview.cpp
+        vertex_shader.vert
+        fragment_shader.frag
     )
     find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 # Define target properties for Android with Qt 6 as:
@@ -43,6 +46,8 @@ else()
         )
     endif()
 endif()
+
+target_include_directories(PickyColor PRIVATE ".")
 
 target_link_libraries(PickyColor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::OpenGL)
 
