@@ -9,5 +9,5 @@ out vec3 vertexColor;
 void main(void)
 {
     gl_Position = mvp * vec4(position, 1.0);
-    vertexColor = color;
+    vertexColor = color + 0.5;
 }

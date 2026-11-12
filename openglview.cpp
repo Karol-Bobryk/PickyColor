@@ -18,20 +18,7 @@ GLfloat vertices[] =
 
 };
 
-GLfloat colors[] = // TODO: try calcing it in a shader, its pretty procedural +0.5 to each cord :V
-{
-	0.0f, 0.0f, 0.0f,  
-	1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 1.0f,
-	0.0f, 0.0f, 1.0f,
-
-	0.0f, 1.0f, 0.0f,  
-	1.0f, 1.0f, 0.0f,
-	1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f,  
-};
-
-GLshort indices[] =
+GLushort indices[] =
 {
 	// left
 	0, 1, 4,
@@ -44,7 +31,7 @@ GLshort indices[] =
 	3, 6, 7,
 	// back
 	3, 4, 7,
-	4, 7, 8,
+	3, 4, 0,
 	// up
 	4, 5, 6,
 	4, 6, 7,
@@ -52,6 +39,37 @@ GLshort indices[] =
 	0, 1, 2,
 	0, 2, 3,
 };
+// gay prism
+// GLfloat vertices[] =
+// {
+//     // base
+//     -0.5f, -0.5f, -0.5f,
+//      0.5f, -0.5f, -0.5f,
+//      0.5f, -0.5f,  0.5f,
+//     -0.5f, -0.5f,  0.5f,
+
+//     // apex
+//      0.0f,  0.5f,  0.0f,
+// };
+
+// GLushort indices[] =
+// {
+//     // front
+//     0, 1, 4,
+
+//     // right
+//     1, 2, 4,
+
+//     // back
+//     2, 3, 4,
+
+//     // left
+//     3, 0, 4,
+
+//     // bottom
+//     0, 1, 2,
+//     0, 2, 3,
+// };
 /* clang-format on */
 OpenGLView::OpenGLView(QWidget *parent)
     : QOpenGLWidget{parent}
@@ -74,6 +92,7 @@ void OpenGLView::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
 
+    glDisable(GL_CULL_FACE);
     initializeShaders();
 
     attachShadersToProgram();
@@ -88,15 +107,20 @@ void OpenGLView::initializeGL()
         qInfo() << "failed to create the VBO";
     vbo->bind();
 
-    vbo->allocate(vertices, sizeof(vertices)); // TODO: add ebo
+    vbo->allocate(vertices, sizeof(vertices));
 
+    if (!ibo->create())
+        qInfo() << "failed to create the IBO";
+    ibo->bind();
+
+    ibo->allocate(indices, sizeof(indices));
+
+    shader_program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(float));
     shader_program->enableAttributeArray(0);
-    shader_program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 6 * sizeof(float));
 
+    shader_program->setAttributeBuffer(1, GL_FLOAT, 0, 3, 3 * sizeof(float));
     shader_program->enableAttributeArray(1);
-    shader_program->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(float), 3, 6 * sizeof(float));
 
-    vbo->release();
     vao->release();
 }
 
@@ -113,7 +137,7 @@ void OpenGLView::paintGL()
 
     vao->bind();
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_SHORT, nullptr);
 
     vao->release();
 
@@ -159,8 +183,6 @@ void OpenGLView::attachShadersToProgram()
 
 QMatrix4x4 OpenGLView::getMVPMatrix()
 {
-    static float rotation = 0; // TODO: delete funzies
-    rotation = fmodf(rotation + 5, 360);
 
     QMatrix4x4 projection;
     projection.perspective(45.0f, float(width()) / float(height()), 0.1f, 300.0f);
@@ -169,9 +191,82 @@ QMatrix4x4 OpenGLView::getMVPMatrix()
     view.translate(0.0f, 0.0f, -3.0f);
 
     QMatrix4x4 model;
-    model.rotate(rotation, 1.0f, 1.0f, 1.0f);
+    float angle = isDragged ? angle_rot_tmp : angle_rot;
+    float x = isDragged ? x_rot_tmp : x_rot;
+    float y = isDragged ? y_rot_tmp : y_rot;
+
+    model.rotate(angle, x, y, 0.0);
 
     return projection * view * model;
+}
+
+void OpenGLView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->type() != QMouseEvent::MouseButtonPress)
+        return;
+
+    x_rot_tmp = x_rot;
+    y_rot_tmp = y_rot;
+    z_rot_tmp = z_rot;
+    angle_rot_tmp = angle_rot;
+
+    isDragged = true;
+    drag_origin = event->position();
+}
+
+void OpenGLView::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->type() != QMouseEvent::MouseMove)
+        return;
+
+    if (drag_origin.isNull())
+        return;
+
+    QLineF dragVec(drag_origin, event->position());
+
+    float denominator = fmin(width(), height());
+
+    constexpr float scaling_factor = 0.1;
+
+    constexpr float deadzone = 25;
+
+    if (dragVec.length() < deadzone)
+        angle_rot_tmp = 0;
+    else
+        angle_rot_tmp = fmodf((dragVec.length() / denominator) * scaling_factor * 360.0
+                                  + angle_rot_tmp,
+                              360.0);
+
+    QLineF u_vec = dragVec.unitVector();
+
+    y_rot_tmp = (u_vec.x2() - drag_origin.x());
+    x_rot_tmp = (u_vec.y2() - drag_origin.y());
+
+    qInfo() << u_vec;
+    update();
+}
+
+void OpenGLView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->type() != QMouseEvent::MouseButtonRelease)
+        return;
+
+    x_rot = x_rot_tmp;
+    y_rot = y_rot_tmp;
+    z_rot = z_rot_tmp;
+    angle_rot = angle_rot_tmp;
+
+    x_rot_tmp = 0;
+    y_rot_tmp = 0;
+    z_rot_tmp = 0;
+    angle_rot_tmp = 0;
+
+    drag_origin.setX(0);
+    drag_origin.setY(0);
+
+    isDragged = false;
+
+    update();
 }
 
 OpenGLView::~OpenGLView()
@@ -180,6 +275,7 @@ OpenGLView::~OpenGLView()
 
     delete vbo;
     delete vao;
+    delete ibo;
     delete shader_program;
     delete vertex_shader;
     delete frag_shader;
